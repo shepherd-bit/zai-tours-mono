@@ -1,99 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
+import { CONTACT_INFO } from '@/data/navigation';
 
 /**
- * Gallery imagery with uniform height and varying widths (landscape, square, portrait)
+ * Accepts either a remote URL / root path or a storage-relative file path
+ * (e.g. "gallery/abc.jpg" written by the Filament upload).
  */
-const GALLERY_IMAGES = [
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-01/900/1125', // Portrait
-    alt: 'Traditional dhow sailing on Kilifi creek at sunset',
-    title: 'Kilifi Creek Sunset',
-    location: 'Kilifi, KE',
-    tag: 'Dhow Ride',
-    widthClass: 'w-[280px] md:w-[340px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-02/1000/1000', // Square
-    alt: 'Snorkeling over coral reefs in Watamu marine park',
-    title: 'Watamu Marine Park',
-    location: 'Watamu, KE',
-    tag: 'Snorkel',
-    widthClass: 'w-[320px] md:w-[380px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-03/1200/800', // Landscape (wider)
-    alt: 'White sand beach day on the south coast of Diani',
-    title: 'Diani Beach Day',
-    location: 'Diani, KE',
-    tag: 'South Coast',
-    widthClass: 'w-[380px] md:w-[460px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-04/900/1350', // Tall Portrait
-    alt: 'Historic streets and architecture of Malindi old town',
-    title: 'Malindi Old Town',
-    location: 'Malindi, KE',
-    tag: 'Culture',
-    widthClass: 'w-[260px] md:w-[320px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-05/1100/1100', // Square
-    alt: 'Walking trail through Arabuko Sokoke forest',
-    title: 'Arabuko Sokoke',
-    location: 'Kilifi, KE',
-    tag: 'Forest Trail',
-    widthClass: 'w-[320px] md:w-[380px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-06/1200/750', // Wide Landscape
-    alt: 'Coastal view from the SGR Madaraka Express train',
-    title: 'SGR Coastal Ride',
-    location: 'Mombasa Line',
-    tag: 'Train Trip',
-    widthClass: 'w-[400px] md:w-[480px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-07/900/1125', // Portrait
-    alt: 'Bird watching by the water at Mida creek',
-    title: 'Mida Creek',
-    location: 'Watamu, KE',
-    tag: 'Birding',
-    widthClass: 'w-[280px] md:w-[340px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-08/1200/900', // Landscape
-    alt: 'Ancient baobab trees on the Kilifi hinterland trail',
-    title: 'Baobab Trail',
-    location: 'Kilifi, KE',
-    tag: 'Day Trip',
-    widthClass: 'w-[360px] md:w-[440px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-09/900/1200', // Portrait
-    alt: 'City tour around Fort Jesus in Mombasa',
-    title: 'Fort Jesus Run',
-    location: 'Mombasa, KE',
-    tag: 'City Tour',
-    widthClass: 'w-[280px] md:w-[340px]',
-  },
-  {
-    src: 'https://picsum.photos/seed/zai-gallery-10/1000/1000', // Square
-    alt: 'Quiet private cove at Tiwi beach',
-    title: 'Tiwi Beach Escape',
-    location: 'Tiwi, KE',
-    tag: 'Hidden Cove',
-    widthClass: 'w-[320px] md:w-[380px]',
-  },
-];
+const toSrc = (image) => {
+  if (!image) return null;
+  if (/^(?:https?:)?\/\//.test(image) || image.startsWith('/')) return image;
+  return `/storage/${image}`;
+};
 
 const ARROW_BTN =
   'w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/15 bg-white/[0.03] grid place-items-center text-[14px] md:text-[16px] font-bold transition disabled:opacity-25 disabled:cursor-not-allowed enabled:hover:bg-[#FF5A2C] enabled:hover:border-[#FF5A2C] enabled:hover:text-white';
 
-export const Gallery = () => {
+export const Gallery = ({ galleryImages = [] }) => {
   const trackRef = useRef(null);
   const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(true);
+  const [canNext, setCanNext] = useState(galleryImages.length > 1);
   const [progress, setProgress] = useState(0);
   const [current, setCurrent] = useState(1);
 
@@ -109,7 +34,7 @@ export const Gallery = () => {
     setCanNext(el.scrollLeft < max - 4);
 
     if (max > 0 && max - el.scrollLeft <= 4) {
-      setCurrent(GALLERY_IMAGES.length);
+      setCurrent(galleryImages.length);
       return;
     }
 
@@ -118,9 +43,9 @@ export const Gallery = () => {
       const gap = parseFloat(getComputedStyle(el).gap) || 0;
       const step = firstCard.offsetWidth + gap;
       const index = step > 0 ? Math.round(el.scrollLeft / step) + 1 : 1;
-      setCurrent(Math.min(GALLERY_IMAGES.length, Math.max(1, index)));
+      setCurrent(Math.min(galleryImages.length, Math.max(1, index)));
     }
-  }, []);
+  }, [galleryImages.length]);
 
   useEffect(() => {
     const el = trackRef.current;
@@ -192,89 +117,114 @@ export const Gallery = () => {
           </div>
         </div>
 
-        {/* Carousel Track — Uniform height with variable natural widths */}
-        <div
-          ref={trackRef}
-          className="mt-8 md:mt-14 flex items-center gap-4 md:gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth select-none pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {GALLERY_IMAGES.map((image, idx) => (
-            <motion.figure
-              key={image.src}
-              whileHover={{ y: -6 }}
-              className={`group relative shrink-0 ${image.widthClass} snap-start`}
+        {galleryImages.length === 0 ? (
+          <div className="mt-8 md:mt-14 rounded-[20px] md:rounded-[28px] border border-white/10 bg-white/[0.04] p-8 md:p-14 text-center">
+            <div className="text-[16px] md:text-[22px] font-black tracking-tight">
+              Gallery loading soon
+            </div>
+            <div className="mt-2 text-[12px] md:text-[14px] text-white/60">
+              Fresh coast photos are on the way. Message us on WhatsApp for a sneak peek.
+            </div>
+            <a
+              href={`https://wa.me/${CONTACT_INFO.whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-1.5 md:gap-2 h-[34px] md:h-[40px] px-4 md:px-5 rounded-full bg-[#F5F1EB] text-[#0E0E0F] text-[10px] md:text-[12px] font-bold tracking-wide hover:bg-white transition"
             >
-              {/* Fixed uniform height across all cards (e.g. h-[380px] on mobile, h-[460px] on desktop) */}
-              <div className="relative h-[380px] md:h-[460px] rounded-[20px] md:rounded-[28px] overflow-hidden bg-[#151515] border border-white/[0.07]">
-                {/* Fallback emblem shown while an image loads or if it fails */}
-                <div aria-hidden="true" className="absolute inset-0 grid place-items-center">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/10 grid place-items-center text-white/25 text-[14px] md:text-[16px]">
-                    ✦
-                  </div>
-                </div>
-
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  loading="lazy"
-                  draggable={false}
-                  onError={(event) => {
-                    event.currentTarget.style.opacity = '0';
-                  }}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-[linear-gradient(transparent,rgba(0,0,0,0.65))]"
-                />
-
-                {/* Slide Index */}
-                <span className="absolute top-3 left-3 md:top-4 md:left-4 h-6 md:h-7 px-2.5 md:px-3 rounded-full bg-black/40 border border-white/15 backdrop-blur text-[9px] md:text-[11px] font-bold tracking-widest grid place-items-center text-white">
-                  {String(idx + 1).padStart(2, '0')}
-                </span>
-
-                {/* Trip Tag */}
-                <span className="absolute top-3 right-3 md:top-4 md:right-4 h-6 md:h-7 px-2.5 md:px-3 rounded-full bg-[#D9FF66] text-[#0E0E0F] text-[9px] md:text-[11px] font-bold grid place-items-center">
-                  {image.tag}
-                </span>
-
-                {/* Caption */}
-                <figcaption className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-4 md:right-4 flex justify-between items-end">
-                  <div className="text-white">
-                    <div className="text-[10px] md:text-[12px] opacity-70 tracking-wide">
-                      {image.location}
-                    </div>
-                    <div className="mt-1 text-[15px] md:text-[20px] font-black tracking-tight leading-none">
-                      {image.title}
-                    </div>
-                  </div>
-                  <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-white text-black grid place-items-center font-bold text-[10px] md:text-[12px]">
-                    ↗
-                  </div>
-                </figcaption>
-              </div>
-            </motion.figure>
-          ))}
-        </div>
-
-        {/* Scroll Progress + Counter */}
-        <div className="mt-6 md:mt-8 flex items-center gap-4 md:gap-6">
-          <div className="text-[10px] md:text-[12px] font-bold tracking-widest tabular-nums">
-            {String(current).padStart(2, '0')}
-            <span className="opacity-40"> / {GALLERY_IMAGES.length}</span>
+              Ask on WhatsApp
+              <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#FF5A2C] text-white grid place-items-center text-[8px] md:text-[10px]">
+                →
+              </span>
+            </a>
           </div>
-
-          <div className="flex-1 h-[2px] rounded-full bg-white/10 overflow-hidden">
+        ) : (
+          <>
+            {/* Carousel Track — uniform height, each frame takes the image's own aspect ratio */}
             <div
-              className="h-full bg-[#FF5A2C] transition-[width] duration-150 ease-out"
-              style={{ width: `${Math.max(6, progress * 100)}%` }}
-            />
-          </div>
+              ref={trackRef}
+              className="mt-8 md:mt-14 flex items-start gap-4 md:gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth select-none pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {galleryImages.map((image, idx) => {
+                const src = toSrc(image.image);
 
-          <div className="hidden sm:block text-[10px] md:text-[12px] font-bold tracking-widest uppercase opacity-50">
-            4.9 rating • 40+ trips
-          </div>
-        </div>
+                return (
+                  <motion.figure
+                    key={image.id ?? image.site}
+                    whileHover={{ y: -6 }}
+                    className="group relative shrink-0 snap-start rounded-[20px] md:rounded-[28px] bg-[#151515] border border-white/[0.07] overflow-hidden"
+                  >
+                    {/* Fallback emblem shown while an image loads or if it fails */}
+                    <div aria-hidden="true" className="absolute inset-0 grid place-items-center">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/10 grid place-items-center text-white/25 text-[14px] md:text-[16px]">
+                        ✦
+                      </div>
+                    </div>
+
+                    {src ? (
+                      <img
+                        src={src}
+                        alt={image.site}
+                        loading="lazy"
+                        draggable={false}
+                        onLoad={syncState}
+                        onError={(event) => {
+                          event.currentTarget.style.opacity = '0';
+                        }}
+                        className="relative block h-[380px] md:h-[460px] w-auto max-w-none aspect-[auto_4/3] transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="relative h-[380px] md:h-[460px] w-[260px] md:w-[320px]" />
+                    )}
+
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-[linear-gradient(transparent,rgba(0,0,0,0.65))]"
+                    />
+
+                    {/* Slide Index */}
+                    <span className="absolute top-3 left-3 md:top-4 md:left-4 h-6 md:h-7 px-2.5 md:px-3 rounded-full bg-black/40 border border-white/15 backdrop-blur text-[9px] md:text-[11px] font-bold tracking-widest grid place-items-center text-white">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+
+                    {/* Caption */}
+                    <figcaption className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-4 md:right-4 flex justify-between items-end gap-3">
+                      <div className="text-white min-w-0">
+                        <div className="text-[10px] md:text-[12px] opacity-70 tracking-wide">
+                          {image.location}
+                        </div>
+                        <div className="mt-1 text-[15px] md:text-[20px] font-black tracking-tight leading-none break-words">
+                          {image.site}
+                        </div>
+                      </div>
+                      <div className="shrink-0 w-7 h-7 md:w-9 md:h-9 rounded-full bg-white text-black grid place-items-center font-bold text-[10px] md:text-[12px]">
+                        ↗
+                      </div>
+                    </figcaption>
+                  </motion.figure>
+                );
+              })}
+            </div>
+
+            {/* Scroll Progress + Counter */}
+            <div className="mt-6 md:mt-8 flex items-center gap-4 md:gap-6">
+              <div className="text-[10px] md:text-[12px] font-bold tracking-widest tabular-nums">
+                {String(current).padStart(2, '0')}
+                <span className="opacity-40"> / {galleryImages.length}</span>
+              </div>
+
+              <div className="flex-1 h-[2px] rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full bg-[#FF5A2C] transition-[width] duration-150 ease-out"
+                  style={{ width: `${Math.max(6, progress * 100)}%` }}
+                />
+              </div>
+
+              <div className="hidden sm:block text-[10px] md:text-[12px] font-bold tracking-widest uppercase opacity-50">
+                4.9 rating • 40+ trips
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

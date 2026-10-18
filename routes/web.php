@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\GalleryImage;
 use App\Models\LaundryService;
 use App\Models\Stay;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,10 @@ Route::get('/', function () {
             ->orderBy('created_at')
             ->get(),
         'laundryServices' => LaundryService::query()
+            ->where('is_available', true)
+            ->orderBy('created_at')
+            ->get(),
+        'galleryImages' => GalleryImage::query()
             ->where('is_available', true)
             ->orderBy('created_at')
             ->get(),
