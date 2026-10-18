@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { LAUNDRY_SERVICES } from '@/data/laundry';
+import { CONTACT_INFO } from '@/data/navigation';
 import { FreshLabVisual } from './FreshLabVisual';
 
-export const LaundrySection = () => {
+export const LaundrySection = ({ laundryServices = [] }) => {
   const [pickupEnabled, setPickupEnabled] = useState(false);
   const [tapCount, setTapCount] = useState(0);
 
@@ -86,32 +86,54 @@ export const LaundrySection = () => {
             </div>
 
             {/* Pricing Cards Grid */}
-            <div className="mt-6 md:mt-10 grid sm:grid-cols-2 gap-3 md:gap-4">
-              {LAUNDRY_SERVICES.map((service) => (
-                <motion.div
-                  key={service.title}
-                  whileHover={{ scale: 1.02 }}
-                  className="group relative rounded-[16px] md:rounded-[22px] bg-[#151515] border border-white/[0.07] p-4 md:p-6 hover:border-white/20 transition-colors"
+            {laundryServices.length === 0 ? (
+              <div className="mt-6 md:mt-10 rounded-[16px] md:rounded-[22px] border border-white/10 bg-white/[0.04] p-6 md:p-10 text-center">
+                <div className="text-[16px] md:text-[22px] font-black tracking-tight">
+                  Fresh rates dropping soon
+                </div>
+                <div className="mt-2 text-[12px] md:text-[14px] text-white/60">
+                  Our rate card is being restocked. Message us on WhatsApp for current pricing.
+                </div>
+                <a
+                  href={`https://wa.me/${CONTACT_INFO.whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex items-center gap-1.5 md:gap-2 h-[34px] md:h-[40px] px-4 md:px-5 rounded-full bg-[#F5F1EB] text-[#0E0E0F] text-[10px] md:text-[12px] font-bold tracking-wide hover:bg-white transition"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/[0.06] border border-white/10 grid place-items-center text-[12px] md:text-[14px]">
-                      {service.icon}
+                  Ask on WhatsApp
+                  <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#D9FF66] text-[#0E0E0F] grid place-items-center text-[8px] md:text-[10px]">
+                    →
+                  </span>
+                </a>
+              </div>
+            ) : (
+              <div className="mt-6 md:mt-10 grid sm:grid-cols-2 gap-3 md:gap-4">
+                {laundryServices.map((service) => (
+                  <motion.div
+                    key={service.id ?? service.title}
+                    whileHover={{ scale: 1.02 }}
+                    className="group relative rounded-[16px] md:rounded-[22px] bg-[#151515] border border-white/[0.07] p-4 md:p-6 hover:border-white/20 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/[0.06] border border-white/10 grid place-items-center text-[12px] md:text-[14px]">
+                        {service.icon}
+                      </div>
+                      <span className="text-[9px] md:text-[11px] px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-[#D9FF66]/15 text-[#D9FF66] border border-[#D9FF66]/20 font-bold tracking-wide">
+                        {service.unit}
+                      </span>
                     </div>
-                    <span className="text-[9px] md:text-[11px] px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-[#D9FF66]/15 text-[#D9FF66] border border-[#D9FF66]/20 font-bold tracking-wide">
-                      {service.unit}
-                    </span>
-                  </div>
 
-                  <div className="mt-2.5 md:mt-4 font-bold tracking-tight leading-tight">
-                    {service.title}
-                  </div>
-                  <div className="mt-1 flex items-baseline gap-1.5 md:gap-2">
-                    <span className="text-[20px] md:text-[26px] font-black tracking-tight">{service.price}</span>
-                    <span className="text-[10px] md:text-[12px] opacity-50">{service.desc}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <div className="mt-2.5 md:mt-4 font-bold tracking-tight leading-tight">
+                      {service.title}
+                    </div>
+                    <div className="mt-1 flex items-baseline gap-1.5 md:gap-2">
+                      <span className="text-[20px] md:text-[26px] font-black tracking-tight">{service.price}</span>
+                      <span className="text-[10px] md:text-[12px] opacity-50">{service.description}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
             {/* Quality Standard Badges */}
             <div className="mt-6 flex flex-wrap gap-3">

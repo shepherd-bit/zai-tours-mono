@@ -11,7 +11,7 @@ import { LaundrySection } from '@/Components/home/LaundrySection';
 import { AboutSection } from '@/Components/home/AboutSection';
 import { Gallery } from '@/Components/home/Gallery';
 
-export default function Home({ stays = [] }) {
+export default function Home({ stays = [], laundryServices = [] }) {
     return (
         <>
             <Head title="ZAI Tours & Stays — Move. Stay. Fresh." />
@@ -31,7 +31,7 @@ export default function Home({ stays = [] }) {
                     <HeroSection />
                     <TransportSection />
                     <StaysSection stays={stays} />
-                    <LaundrySection />
+                    <LaundrySection laundryServices={laundryServices} />
                     <AboutSection />
                     <Gallery />
                 </main>

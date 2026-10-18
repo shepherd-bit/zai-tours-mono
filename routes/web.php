@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\LaundryService;
 use App\Models\Stay;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -8,6 +9,10 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Home', [
         'stays' => Stay::query()
+            ->where('is_available', true)
+            ->orderBy('created_at')
+            ->get(),
+        'laundryServices' => LaundryService::query()
             ->where('is_available', true)
             ->orderBy('created_at')
             ->get(),
